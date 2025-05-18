@@ -1,7 +1,7 @@
 import { useState } from "react"
-import { View, TextInput, Button, StyleSheet } from "react-native"
-import { auth, db } from "../../firebase"
+import { View, TextInput, Button, StyleSheet, Alert } from "react-native"
 import { createUserWithEmailAndPassword } from "firebase/auth"
+import { auth, db } from "../../firebase"
 import { doc, setDoc } from "firebase/firestore"
 import { router } from "expo-router"
 
@@ -10,7 +10,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("")
   const [role, setRole] = useState("parent")
 
-  const handleRegister = async () => {
+  const handleRegisterButton = async () => {
     try {
       const userCred = await createUserWithEmailAndPassword(
         auth,
@@ -18,31 +18,40 @@ export default function RegisterScreen() {
         password
       )
       await setDoc(doc(db, "users", userCred.user.uid), { email, role })
-      router.push("/(tabs)")
+      Alert.alert("Success", `User created: ${userCred.user.email}`)
+      router.push("/(tabs)/home")
     } catch (error) {
-      alert(error.message)
+      Alert.alert("Register Error", error.message)
     }
   }
 
   return (
     <View style={styles.container}>
-      <TextInput placeholder="Email" value={email} onChangeText={setEmail} />
+      <TextInput
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
+      />
       <TextInput
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        style={styles.input}
       />
       <TextInput
-        placeholder="Role (parent or child)"
+        placeholder="Role"
         value={role}
         onChangeText={setRole}
+        style={styles.input}
       />
-      <Button title="Register" onPress={handleRegister} />
+      <Button title="Register" onPress={handleRegisterButton} />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", padding: 20 },
+  input: { marginVertical: 8, padding: 10, borderWidth: 1, borderRadius: 6 },
 })
